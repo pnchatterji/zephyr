@@ -1,0 +1,16 @@
+# BST-AB3 board configuration
+
+# Copyright (c)2022 Bosch Sensortec GmbH
+# SPDX-License-Identifier: Apache-2.0
+
+config BOARD_BST_AB3_NRF52840
+	bool "bst AB3"
+	depends on SOC_NRF52840_QIAA
+
+#Bosch Sensortec Application Board 3.0 can be configured for supplying
+#the sensor shuttle board 1.8V or 2.8 V. The following board-specific
+#config option can be used to set VDD to 2.8 V in board.c
+config BST_AB3_NRF52840_SELECT_VDD_2_8
+	bool "BST_AB3_NRF52840 Select VDD 2.8V"
+	depends on BOARD_BST_AB3_NRF52840
+

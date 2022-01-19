@@ -1,0 +1,39 @@
+# BST-AB3 board configuration
+
+# Copyright (c) 2022 Bosch Sensortec GmbH
+# SPDX-License-Identifier: Apache-2.0
+
+if BOARD_BST_AB3_NRF52840
+
+config BOARD
+	default "bst_ab3_nrf52840"
+
+#Flash load offset is given as 0x30000 to avoid the NS Softdevice S140 with 
+#Bluetooth Stack and USB MTP Firmware which come pre-flashed on the board
+#Refer the flash section in bst_ab3_nrf52840.dts file for more details
+config FLASH_LOAD_OFFSET
+	default 0x30000
+
+#Bosch Sensortec Application Board 3.0 can be configured for supplying
+#the sensor shuttle board 1.8V or 2.8 V. The following board-specific
+#config option can be used to set VDD to 2.8 V in board.c Default is
+#1.8 V. The setting can be changed here for all applications or 
+#overridden for specific applications in the app prj.conf file
+config BST_AB3_NRF52840_SELECT_VDD_2_8
+	default n
+	
+if USB_DEVICE_STACK
+
+config UART_LINE_CTRL
+	default y
+
+endif # USB_DEVICE_STACK
+
+config IEEE802154_NRF5
+	default y
+	depends on IEEE802154
+
+config BT_CTLR
+	default BT
+
+endif # BOARD_BST_AB3_NRF52840

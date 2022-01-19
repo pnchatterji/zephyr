@@ -1,0 +1,156 @@
+/*
+ * Copyright (c) 2022 Bosch Sensortec GmbH
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+/dts-v1/;
+#include <nordic/nrf52840_qiaa.dtsi>
+
+/ {
+	model = "BST AB3 nRF52840";
+	compatible = "nordic,bst_ab3_nrf52840";
+
+	chosen {
+		zephyr,console = &bst_ab3_cdc_acm_uart;
+		zephyr,shell-uart = &bst_ab3_cdc_acm_uart;
+		zephyr,bt-c2h-uart = &bst_ab3_cdc_acm_uart;
+		zephyr,sram = &sram0;
+		zephyr,flash = &flash0;
+		zephyr,code-partition = &slot0_partition;
+	};
+
+	leds {
+		compatible = "gpio-leds";
+		led0: led_0 {
+			gpios = <&gpio0 7 GPIO_ACTIVE_LOW>;
+			label = "Red LED";
+		};
+		led1: led_1 {
+			gpios = <&gpio0 12 GPIO_ACTIVE_LOW>;
+			label = "Green LED";
+		};
+		led2: led_2 {
+			gpios = <&gpio0 11 GPIO_ACTIVE_LOW>;
+			label = "Blue LED";
+		};
+	};
+
+
+	buttons {
+		compatible = "gpio-keys";
+		button0: button_0 {
+			gpios = <&gpio0 9 (GPIO_PULL_UP | \
+					    GPIO_ACTIVE_LOW)>;
+			label = "Push button switch 0 (T1)";
+		};
+		button1: button_1 {
+			gpios = <&gpio0 25 (GPIO_PULL_UP | \
+					   GPIO_ACTIVE_LOW)>;
+			label = "Push button switch 1 (T2)";
+		};
+	};
+
+	
+
+	/* These aliases are provided for compatibility with samples */
+	aliases {
+		led0 = &led0;
+		led1 = &led1;
+		led2 = &led2;
+		sw0 = &button0;
+		sw1 = &button1;
+	};
+};
+
+&gpiote {
+	status = "okay";
+};
+
+&gpio0 {
+	status = "okay";
+};
+
+&gpio1 {
+	status = "okay";
+};
+
+shuttle_i2c: &i2c0 {
+	compatible = "nordic,nrf-twi";
+	/* For Temperature I2C of Application Board 3.0 */
+	status = "okay";
+	sda-pin = <29>;
+	scl-pin = <26>;
+};
+
+&spi0 {
+	compatible = "nordic,nrf-spi";
+	/* For External Flash SPI of Application Board 3.0 */
+	/* status = "okay"; */
+	sck-pin = <19>;
+	mosi-pin = <20>;
+	miso-pin = <21>;
+};
+
+&spi1 {
+	compatible = "nordic,nrf-spi";
+	/* For Shuttle Board SPI of Application Board 3.0 */
+	status = "okay";
+	sck-pin = <16>;
+	mosi-pin = <6>;
+	miso-pin = <15>;
+};
+
+&flash0 {
+
+	partitions {
+		compatible = "fixed-partitions";
+		#address-cells = <1>;
+		#size-cells = <1>;
+		/*
+		 * The following partitions are pre-flashed on Application Board 3.0
+		 * 0x000000000 (160kB) : Nordic Semiconductor Soft Device S140 with Bluetooth Stack
+		 * 0x000028000 (32kB)  : USB MTP Firmware
+		 * 0x000030000 (768kB) : Application
+		 * 0x0000f0000 (64kB)  : USB DFU Bootloader
+		 * The range from 0x00030000 to 0x0000f0000 is avaiable for the application
+		 * This is divided into slot0 (360kB), slot1 (360kB) and scratch (64kB) to enable firmware 
+		 * upgrade feature. If this is not required, a single slot0 of 768kb can be defined
+		 * Code RAM 0x00800000 (256kB)
+		 */
+		sd_partition: partition@0 {
+			label = "nssd-s140";
+			reg = <0x000000000 0x00028000>;
+		};
+		mtp_partition: partition@28000 {
+			label = "usb-mtp";
+			reg = <0x000028000 0x00008000>;
+		};	
+		slot0_partition: partition@30000 {
+			label = "image-0";
+			reg = <0x00030000 0x00058000>;
+		};
+		slot1_partition: partition@88000 {
+			label = "image-1";
+			reg = <0x00088000 0x00058000>;
+		};
+		scratch_partition: partition@e0000 {
+			label = "image-scratch";
+			reg = <0x000e0000 0x00010000>;
+		};
+		boot_partition: partition@f0000 {
+			label = "mcuboot";
+			reg = <0x000f0000 0x00010000>;
+		};
+	};
+};
+
+zephyr_udc0: &usbd {
+	compatible = "nordic,nrf-usbd";
+	status = "okay";
+	
+	bst_ab3_cdc_acm_uart: bst_ab3_cdc_acm_uart {
+		compatible = "zephyr,cdc-acm-uart";
+		label = "CDC_ACM_0";
+	};
+};
